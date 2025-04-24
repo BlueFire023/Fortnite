@@ -41,6 +41,7 @@ public class GunScript : MonoBehaviour
 
     public void OnFire(InputAction.CallbackContext context)
     {
+        Debug.Log("Firiing");
         if (context.started)
             isShooting = true;
         else if (context.canceled)

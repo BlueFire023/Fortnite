@@ -1,0 +1,74 @@
+{
+    "name": "BuildInputSystem",
+    "maps": [
+        {
+            "name": "Build",
+            "id": "a71ee1a4-f3c5-48eb-bc07-de836bddc13c",
+            "actions": [
+                {
+                    "name": "Wall",
+                    "type": "Button",
+                    "id": "07ec11a0-9402-4260-a8fd-3530945f594c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Floor",
+                    "type": "Button",
+                    "id": "952eb229-c527-490b-9c66-65d78fa1b6b1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Ramp",
+                    "type": "Button",
+                    "id": "1d3738dc-d3c2-4b36-9faf-7726ce4002e0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "9bd23478-bea6-4e0b-9a0e-09bcd2d4e370",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Wall",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0492bc1d-3405-4722-8dcb-a26ff6735265",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Floor",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "596b38ce-fd7a-456b-a686-8b16fcda17d1",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Ramp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

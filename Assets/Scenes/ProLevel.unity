@@ -28723,18 +28723,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f134b82e5d3f9914cba74907864706d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RayOrigin: {fileID: 118333269}
+  rayOrigin: {fileID: 118333269}
   fireAction: {fileID: -1541089389028719409, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
   playerCameraRoot: {fileID: 2132668511}
   rayLength: 5
-  Wall: {fileID: 2586589774234524522, guid: d120fd867de83494685e5c835335b508, type: 3}
-  Floor: {fileID: 6970630545832066096, guid: 973a901c767ffb145bd16075b643e0ad, type: 3}
-  Ramp: {fileID: 8017166997950565052, guid: 87881609ac165b5498a654e7b5bdf5df, type: 3}
+  wall: {fileID: 2586589774234524522, guid: d120fd867de83494685e5c835335b508, type: 3}
+  floor: {fileID: 6970630545832066096, guid: 973a901c767ffb145bd16075b643e0ad, type: 3}
+  ramp: {fileID: 8017166997950565052, guid: 87881609ac165b5498a654e7b5bdf5df, type: 3}
   timeBetweenBuilds: 0.1
-  _rayHitPoint: {x: 0, y: 0, z: 0}
-  _calcedObjPos: {x: 0, y: 0, z: 0}
+  rayHitPoint: {x: 0, y: 0, z: 0}
+  calcedObjPos: {x: 0, y: 0, z: 0}
   newCalcedPos: {x: 0, y: 0, z: 0}
-  _clampedRotation: 0
+  clampedRotation: 0
   buildingBool: 0
 --- !u!43 &1038869786
 Mesh:

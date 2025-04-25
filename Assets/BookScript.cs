@@ -1,22 +1,19 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
 {
-    private BuildInputSystem _input;
-    public Transform RayOrigin;
+    [SerializeField] private Transform rayOrigin;
 
     [SerializeField] private InputActionReference fireAction;
     [SerializeField] private GameObject playerCameraRoot;
     [SerializeField] private float rayLength;
 
-    [SerializeField] private GameObject Wall;
-    [SerializeField] private GameObject Floor;
-    [SerializeField] private GameObject Ramp;
+    [SerializeField] private GameObject wall;
+    [SerializeField] private GameObject floor;
+    [SerializeField] private GameObject ramp;
 
     [SerializeField] private float timeBetweenBuilds;
     private float nextBuildTime;
@@ -25,12 +22,12 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     private GameObject _currentPreviewObject;
 
     private bool _hit;
-    public Vector3 _rayHitPoint;
-    public Vector3 _calcedObjPos;
-    public Vector3 newCalcedPos;
-    public int _clampedRotation;
-    public bool buildingBool;
-    private HashSet<string> builtObjects = new();
+    [SerializeField] private Vector3 rayHitPoint;
+    [SerializeField] private Vector3 calcedObjPos;
+    [SerializeField] private Vector3 newCalcedPos;
+    [SerializeField] private int clampedRotation;
+    [SerializeField] private bool buildingBool;
+    private readonly HashSet<string> builtObjects = new();
 
     private BuildInputSystem _buildInputSystem;
 
@@ -38,7 +35,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         // Erstelle eine Instanz des BuildInputSystem
         _buildInputSystem = new BuildInputSystem();
-        _currentObject = Wall;
+        _currentObject = wall;
     }
 
     private void OnEnable()
@@ -66,10 +63,10 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         if (context.performed)
         {
-            _currentObject = Wall;
+            _currentObject = wall;
             Destroy(_currentPreviewObject);
             _currentPreviewObject = null;
-            _calcedObjPos = Vector3.zero;
+            calcedObjPos = Vector3.zero;
         }
     }
 
@@ -78,10 +75,10 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         if (context.performed)
         {
-            _currentObject = Floor;
+            _currentObject = floor;
             Destroy(_currentPreviewObject);
             _currentPreviewObject = null;
-            _calcedObjPos = Vector3.zero;
+            calcedObjPos = Vector3.zero;
         }
     }
 
@@ -90,21 +87,21 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         if (context.performed)
         {
-            _currentObject = Ramp;
+            _currentObject = ramp;
             Destroy(_currentPreviewObject);
             _currentPreviewObject = null;
-            _calcedObjPos = Vector3.zero;
+            calcedObjPos = Vector3.zero;
         }
     }
 
     private void Update()
     {
         transform.rotation = playerCameraRoot.transform.rotation;
-        this._hit = Physics.Raycast(RayOrigin.position, RayOrigin.forward, out var hit, rayLength);
+        this._hit = Physics.Raycast(rayOrigin.position, rayOrigin.forward, out var hit, rayLength);
         if (_currentPreviewObject is null)
         {
             _currentPreviewObject = Instantiate(_currentObject);
-
+            _currentPreviewObject.GetComponentInChildren<BuildingHealth>().SetBookScript(this);
             var colliders = _currentPreviewObject.GetComponentsInChildren<Collider>();
             foreach (var collider in colliders)
             {
@@ -112,12 +109,12 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
             }
             UpdatePreviewObject();
         }
-        _rayHitPoint = hit.point;
+        rayHitPoint = hit.point;
 
-        if (RoundToNearestEven(_rayHitPoint) != _calcedObjPos || _clampedRotation != ClampToNearest90(playerCameraRoot.transform.eulerAngles.y))
+        if (RoundToNearestEven(rayHitPoint) != calcedObjPos || clampedRotation != ClampToNearest90(playerCameraRoot.transform.eulerAngles.y))
         {
-            _calcedObjPos = RoundToNearestEven(_rayHitPoint);
-            _clampedRotation = ClampToNearest90(playerCameraRoot.transform.eulerAngles.y);
+            calcedObjPos = RoundToNearestEven(rayHitPoint);
+            clampedRotation = ClampToNearest90(playerCameraRoot.transform.eulerAngles.y);
             UpdatePreviewObject();
         }
 
@@ -134,7 +131,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
             _currentPreviewObject.transform.position = new Vector3(0, -1000, 0);
             return;
         }
-        var newPos = _calcedObjPos;
+        var newPos = calcedObjPos;
         if (CheckIfObjectAlreadyExists(newPos))
         {
             if (_currentPreviewObject.CompareTag("Floor") || _currentPreviewObject.CompareTag("Ramp"))
@@ -168,7 +165,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
 
     private Vector3 RoundToNearestEven(Vector3 value)
     {
-        if (_currentObject == Floor)
+        if (_currentObject == floor)
         {
             value = new Vector3(value.x, value.y + 2, value.z);
         }
@@ -181,12 +178,12 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         return builtObjects.Contains(objectString);
     }
 
-    private int RoundToNearestMultiple(float value, int multiple)
+    private static int RoundToNearestMultiple(float value, int multiple)
     {
         return Mathf.RoundToInt(value / multiple) * multiple;
     }
 
-    private int ClampToNearest90(float angle)
+    private static int ClampToNearest90(float angle)
     {
         return (Mathf.RoundToInt(angle / 90f) * 90) % 360;
     }
@@ -213,7 +210,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         {
             return;
         }
-        var objectString = newObject.tag + (newObject.tag.Equals("Wall") ? newObject.transform.eulerAngles.y : "") + newObject.transform.position;
+        var objectString = GenerateObjectName(newObject);
         if (builtObjects.Contains(objectString))
         {
             return;
@@ -247,9 +244,18 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         _currentPreviewObject = null;
     }
 
+    private string GenerateObjectName(GameObject obj)
+    {
+        return obj.tag + (obj.tag.Equals("Wall") ? obj.transform.eulerAngles.y : "") + obj.transform.position;
+    }
+
     public void CleanUp()
     {
         Destroy(_currentPreviewObject);
         _currentPreviewObject = null;
+    }
+    public void RemoveBuilding(GameObject obj)
+    {
+        builtObjects.Remove(GenerateObjectName(obj));
     }
 }

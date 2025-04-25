@@ -2,23 +2,19 @@ using UnityEngine;
 
 public class ModeHandler : MonoBehaviour
 {
-    [SerializeField] private GameObject GunObject;
-    [SerializeField] private GameObject BookObject;
-    void Start()
-    {
-    }
+    [SerializeField] private GameObject gunObject;
+    [SerializeField] private GameObject bookObject;
 
-    // Update is called once per frame
-    void Update()
+    public void Update()
     {
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            GunObject.SetActive(!GunObject.activeSelf);
-            BookObject.SetActive(!BookObject.activeSelf);
+            gunObject.SetActive(!gunObject.activeSelf);
+            bookObject.SetActive(!bookObject.activeSelf);
 
-            GunObject.GetComponent<GunScript>().enabled = GunObject.activeSelf;
-            BookObject.GetComponent<BookScript>().enabled = BookObject.activeSelf;
-            BookObject.GetComponent<BookScript>().CleanUp();
+            gunObject.GetComponent<GunScript>().enabled = gunObject.activeSelf;
+            bookObject.GetComponent<BookScript>().enabled = bookObject.activeSelf;
+            bookObject.GetComponent<BookScript>().CleanUp();
         }
     }
 }

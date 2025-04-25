@@ -4,7 +4,8 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     [SerializeField] private float lifeTimeSeconds = 10f;
-    public void Update()
+    public int bulletDamage = 25;
+    public void Start()
     {
         Destroy(gameObject, lifeTimeSeconds);
     }
@@ -13,7 +14,16 @@ public class Bullet : MonoBehaviour
     {
         if (collision.gameObject.layer != LayerMask.NameToLayer("IgnoreBullet"))
         {
-            Debug.Log("Destroying");
+            if (collision.gameObject.CompareTag("Wall") ||
+                collision.gameObject.CompareTag("Floor") ||
+                collision.gameObject.CompareTag("Ramp"))
+            {
+                var buildingHealth = collision.gameObject.GetComponent<BuildingHealth>();
+                if (buildingHealth != null)
+                {
+                    buildingHealth.OnBulletHit(bulletDamage);
+                }
+            }
             Destroy(gameObject);
         }
     }

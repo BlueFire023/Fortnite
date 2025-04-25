@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
+  - Floor
+  - Ramp
+  - Wall
+  - Bullet
   layers:
   - Default
   - TransparentFX

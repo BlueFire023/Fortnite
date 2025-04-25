@@ -18,6 +18,7 @@ public class ModeHandler : MonoBehaviour
 
             GunObject.GetComponent<GunScript>().enabled = GunObject.activeSelf;
             BookObject.GetComponent<BookScript>().enabled = BookObject.activeSelf;
+            BookObject.GetComponent<BookScript>().CleanUp();
         }
     }
 }

@@ -14201,6 +14201,14 @@ PrefabInstance:
       value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 1925873226565265913, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
+      propertyPath: TopClamp
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925873226565265913, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
+      propertyPath: BottomClamp
+      value: -70
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925873226565265913, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
       propertyPath: JumpTimeout
       value: 0.1
       objectReference: {fileID: 0}
@@ -21189,7 +21197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &655825062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28718,10 +28726,16 @@ MonoBehaviour:
   RayOrigin: {fileID: 118333269}
   fireAction: {fileID: -1541089389028719409, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
   playerCameraRoot: {fileID: 2132668511}
-  rayLength: 3
+  rayLength: 5
   Wall: {fileID: 2586589774234524522, guid: d120fd867de83494685e5c835335b508, type: 3}
   Floor: {fileID: 6970630545832066096, guid: 973a901c767ffb145bd16075b643e0ad, type: 3}
   Ramp: {fileID: 8017166997950565052, guid: 87881609ac165b5498a654e7b5bdf5df, type: 3}
+  timeBetweenBuilds: 0.1
+  _rayHitPoint: {x: 0, y: 0, z: 0}
+  _calcedObjPos: {x: 0, y: 0, z: 0}
+  newCalcedPos: {x: 0, y: 0, z: 0}
+  _clampedRotation: 0
+  buildingBool: 0
 --- !u!43 &1038869786
 Mesh:
   m_ObjectHideFlags: 0

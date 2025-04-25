@@ -1,8 +1,9 @@
-using StarterAssets;
+using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
 {
@@ -17,10 +18,19 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     [SerializeField] private GameObject Floor;
     [SerializeField] private GameObject Ramp;
 
+    [SerializeField] private float timeBetweenBuilds;
+    private float nextBuildTime;
+
     private GameObject _currentObject;
     private GameObject _currentPreviewObject;
 
-    private RaycastHit _raycastHit;
+    private bool _hit;
+    public Vector3 _rayHitPoint;
+    public Vector3 _calcedObjPos;
+    public Vector3 newCalcedPos;
+    public int _clampedRotation;
+    public bool buildingBool;
+    private HashSet<string> builtObjects = new();
 
     private BuildInputSystem _buildInputSystem;
 
@@ -37,6 +47,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         _buildInputSystem.Build.SetCallbacks(this);
         _buildInputSystem.Build.Enable();
         fireAction.action.started += OnBuild;
+        fireAction.action.canceled += OnBuild;
         fireAction.action.Enable();
     }
 
@@ -46,6 +57,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         _buildInputSystem.Build.Disable();
         _buildInputSystem.Build.SetCallbacks(null);
         fireAction.action.started -= OnBuild;
+        fireAction.action.canceled -= OnBuild;
         fireAction.action.Disable();
     }
 
@@ -54,10 +66,10 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         if (context.performed)
         {
-            Debug.Log("Wall action triggered!");
             _currentObject = Wall;
             Destroy(_currentPreviewObject);
             _currentPreviewObject = null;
+            _calcedObjPos = Vector3.zero;
         }
     }
 
@@ -66,10 +78,10 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         if (context.performed)
         {
-            Debug.Log("Floor action triggered!");
             _currentObject = Floor;
             Destroy(_currentPreviewObject);
             _currentPreviewObject = null;
+            _calcedObjPos = Vector3.zero;
         }
     }
 
@@ -78,18 +90,17 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     {
         if (context.performed)
         {
-            Debug.Log("Ramp action triggered!");
             _currentObject = Ramp;
             Destroy(_currentPreviewObject);
             _currentPreviewObject = null;
+            _calcedObjPos = Vector3.zero;
         }
     }
 
     private void Update()
     {
         transform.rotation = playerCameraRoot.transform.rotation;
-        Physics.Raycast(RayOrigin.position, RayOrigin.forward, out _raycastHit, rayLength);
-        Debug.DrawLine(RayOrigin.position, _raycastHit.point, Color.red);
+        this._hit = Physics.Raycast(RayOrigin.position, RayOrigin.forward, out var hit, rayLength);
         if (_currentPreviewObject is null)
         {
             _currentPreviewObject = Instantiate(_currentObject);
@@ -99,46 +110,118 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
             {
                 collider.enabled = false;
             }
+            UpdatePreviewObject();
+        }
+        _rayHitPoint = hit.point;
+
+        if (RoundToNearestEven(_rayHitPoint) != _calcedObjPos || _clampedRotation != ClampToNearest90(playerCameraRoot.transform.eulerAngles.y))
+        {
+            _calcedObjPos = RoundToNearestEven(_rayHitPoint);
+            _clampedRotation = ClampToNearest90(playerCameraRoot.transform.eulerAngles.y);
+            UpdatePreviewObject();
         }
 
+        if (buildingBool)
+        {
+            Build();
+        }
+    }
+
+    private void UpdatePreviewObject()
+    {
+        if (!_hit)
+        {
+            _currentPreviewObject.transform.position = new Vector3(0, -1000, 0);
+            return;
+        }
+        var newPos = _calcedObjPos;
+        if (CheckIfObjectAlreadyExists(newPos))
+        {
+            if (_currentPreviewObject.CompareTag("Floor") || _currentPreviewObject.CompareTag("Ramp"))
+            {
+                switch (ClampToNearest90(playerCameraRoot.transform.eulerAngles.y))
+                {
+                    case 0:
+                        newPos.z += 4;
+                        break;
+                    case 90:
+                        newPos.x += 4;
+                        break;
+                    case 180:
+                        newPos.z -= 4;
+                        break;
+                    case 270:
+                        newPos.x -= 4;
+                        break;
+                }
+            }
+            if (_currentPreviewObject.CompareTag("Ramp"))
+            {
+                newPos.y += 4;
+            }
+        }
         // Setze die Position des Vorschauobjekts
-        _currentPreviewObject.transform.position = RoundToNearestEven(_raycastHit.point);
+        newCalcedPos = newPos;
+        _currentPreviewObject.transform.position = newPos;
         _currentPreviewObject.transform.rotation = Quaternion.Euler(0, ClampToNearest90(playerCameraRoot.transform.eulerAngles.y), 0);
     }
 
     private Vector3 RoundToNearestEven(Vector3 value)
     {
-        // Runde auf die nächste gerade Zahl
-        return new Vector3(RoundToNearestMultipleOfThree(value.x), RoundToNearestMultipleOfThree(value.y), RoundToNearestMultipleOfThree(value.z));
-    }
-
-    private float RoundToNearestMultipleOfThree(float value)
-    {
-        // Runde auf die nächste ganze Zahl
-        int rounded = Mathf.RoundToInt(value);
-
-        // Stelle sicher, dass die Zahl durch 3 teilbar ist
-        int remainder = rounded % 4;
-        if (remainder == 0)
+        if (_currentObject == Floor)
         {
-            return rounded; // Bereits durch 3 teilbar
+            value = new Vector3(value.x, value.y + 2, value.z);
         }
-
-        // Runde auf die nächste Zahl, die durch 3 teilbar ist
-        return rounded + (4 - remainder);
+        return new Vector3(RoundToNearestMultiple(value.x, 4), RoundToNearestMultiple(value.y, 4), RoundToNearestMultiple(value.z, 4));
     }
 
-    private float ClampToNearest90(float angle)
+    private bool CheckIfObjectAlreadyExists(Vector3 position)
     {
-        return Mathf.Round(angle / 90f) * 90f;
+        var objectString = _currentPreviewObject.tag + (_currentPreviewObject.tag.Equals("Wall") ? _currentPreviewObject.transform.eulerAngles.y : "") + position;
+        return builtObjects.Contains(objectString);
     }
+
+    private int RoundToNearestMultiple(float value, int multiple)
+    {
+        return Mathf.RoundToInt(value / multiple) * multiple;
+    }
+
+    private int ClampToNearest90(float angle)
+    {
+        return (Mathf.RoundToInt(angle / 90f) * 90) % 360;
+    }
+
     private void OnBuild(InputAction.CallbackContext context)
     {
-        var newObject = _currentPreviewObject;
+        if (context.started)
+        {
+            buildingBool = true;
+        }
+        else if (context.canceled)
+        {
+            buildingBool = false;
+        }
+    }
 
+    private void Build()
+    {
+        if (Time.time < nextBuildTime)
+            return;
+        nextBuildTime = Time.time + timeBetweenBuilds;
+        var newObject = _currentPreviewObject;
+        if (!newObject && !_hit)
+        {
+            return;
+        }
+        var objectString = newObject.tag + (newObject.tag.Equals("Wall") ? newObject.transform.eulerAngles.y : "") + newObject.transform.position;
+        if (builtObjects.Contains(objectString))
+        {
+            return;
+        }
+        builtObjects.Add(objectString);
         // Aktiviere den MeshCollider nur für das aktuelle Objekt
         var meshCollider = newObject.GetComponentInChildren<MeshCollider>();
-        if (meshCollider != null)
+        if (meshCollider)
         {
             meshCollider.enabled = true;
         }
@@ -160,9 +243,13 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
                 material.renderQueue = -1; // Standard-Render-Queue für Opaque
             }
         }
-
         // Setze das Vorschauobjekt zurück
         _currentPreviewObject = null;
     }
 
+    public void CleanUp()
+    {
+        Destroy(_currentPreviewObject);
+        _currentPreviewObject = null;
+    }
 }

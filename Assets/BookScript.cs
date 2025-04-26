@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,12 +31,14 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     private readonly HashSet<string> builtObjects = new();
 
     private BuildInputSystem _buildInputSystem;
+    private NavMeshUpdater _navMeshUpdater;
 
     private void Awake()
     {
         // Erstelle eine Instanz des BuildInputSystem
         _buildInputSystem = new BuildInputSystem();
         _currentObject = wall;
+        _navMeshUpdater = GameObject.FindGameObjectWithTag("Ground").GetComponent<NavMeshUpdater>();
     }
 
     private void OnEnable()
@@ -102,6 +105,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         {
             _currentPreviewObject = Instantiate(_currentObject);
             _currentPreviewObject.GetComponentInChildren<BuildingHealth>().SetBookScript(this);
+            _currentPreviewObject.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
             var colliders = _currentPreviewObject.GetComponentsInChildren<Collider>();
             foreach (var collider in colliders)
             {
@@ -224,6 +228,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
         }
 
         // Instanziere neue Materialien, um Änderungen nur auf das aktuelle Objekt anzuwenden
+        newObject.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Default");
         var renderers = newObject.GetComponentsInChildren<Renderer>();
         foreach (var renderer in renderers)
         {
@@ -240,7 +245,7 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
                 material.renderQueue = -1; // Standard-Render-Queue für Opaque
             }
         }
-        // Setze das Vorschauobjekt zurück
+        _navMeshUpdater.UpdateNavMesh();
         _currentPreviewObject = null;
     }
 
@@ -257,5 +262,6 @@ public class BookScript : MonoBehaviour, BuildInputSystem.IBuildActions
     public void RemoveBuilding(GameObject obj)
     {
         builtObjects.Remove(GenerateObjectName(obj));
+        _navMeshUpdater.UpdateNavMesh();
     }
 }

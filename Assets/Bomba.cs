@@ -66,6 +66,12 @@ public class Bomba : MonoBehaviour
                 bot.OnBulletHit((int)damage);
             }
 
+            var player = nearbyObject.GetComponentInParent<PlayerHealth>();
+            if (player != null)
+            {
+                player.OnBulletHit((int)damage);
+            }
+
             var rb = nearbyObject.GetComponent<Rigidbody>();
             if (rb != null)
             {

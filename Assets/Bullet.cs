@@ -30,6 +30,11 @@ public class Bullet : MonoBehaviour
                 }
             }
 
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                collision.gameObject.GetComponentInParent<PlayerHealth>().OnBulletHit(bulletDamage);
+            }
+            
             if (collision.gameObject.CompareTag("Bot") && !_originBot)
             {
                 collision.gameObject.GetComponentInParent<Bot>().OnBulletHit(bulletDamage);

@@ -4,9 +4,15 @@ public class Bullet : MonoBehaviour
 {
     [SerializeField] private float lifeTimeSeconds = 10f;
     public int bulletDamage = 25;
+    private bool _originBot;
     public void Start()
     {
         Destroy(gameObject, lifeTimeSeconds);
+    }
+
+    public void SetOrigin()
+    {
+        _originBot = true;
     }
 
     public void OnCollisionEnter(Collision collision)
@@ -22,6 +28,11 @@ public class Bullet : MonoBehaviour
                 {
                     buildingHealth.OnBulletHit(bulletDamage);
                 }
+            }
+
+            if (collision.gameObject.CompareTag("Bot") && !_originBot)
+            {
+                collision.gameObject.GetComponentInParent<Bot>().OnBulletHit(bulletDamage);
             }
             Destroy(gameObject);
         }

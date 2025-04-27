@@ -12,8 +12,9 @@ public class GunScript : MonoBehaviour
 
     private float nextShootTime = 0f;
     [SerializeField] private InputActionReference fireAction;
+    [SerializeField] private InputActionReference bombAction;
     [SerializeField] private GameObject playerCameraRoot;
-
+    [SerializeField] private GameObject bomb;
 
     private void Update()
     {
@@ -27,6 +28,8 @@ public class GunScript : MonoBehaviour
         fireAction.action.started += OnFire;
         fireAction.action.canceled += OnFire;
         fireAction.action.Enable();
+        bombAction.action.performed += OnBomb;
+        bombAction.action.Enable();
     }
 
     private void OnDisable()
@@ -34,6 +37,8 @@ public class GunScript : MonoBehaviour
         fireAction.action.started -= OnFire;
         fireAction.action.canceled -= OnFire;
         fireAction.action.Disable();
+        bombAction.action.performed -= OnBomb;
+        bombAction.action.Disable();
     }
 
     public void OnFire(InputAction.CallbackContext context)
@@ -42,6 +47,20 @@ public class GunScript : MonoBehaviour
             isShooting = true;
         else if (context.canceled)
             isShooting = false;
+    }
+
+    public void OnBomb(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            var bombInstance = Instantiate(bomb, shootPoint.position, Quaternion.Euler(
+                bomb.transform.rotation.eulerAngles.x,
+                shootPoint.rotation.eulerAngles.y,
+                shootPoint.rotation.eulerAngles.z
+            ));
+            var rb = bombInstance.GetComponent<Rigidbody>();
+            rb.AddForce(shootPoint.forward * shootForce / 5, ForceMode.Impulse);
+        }
     }
 
     private void Shoot()

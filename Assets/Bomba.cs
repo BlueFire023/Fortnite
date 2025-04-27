@@ -7,7 +7,7 @@ public class Bomba : MonoBehaviour
     [SerializeField] private float explosionRadius = 5f;
     [SerializeField] private float explosionForce = 700f;
     [SerializeField] private int maxDamage = 100;
-    [SerializeField] private GameObject explosionEffect;
+    [SerializeField] private GameObject[] explosionEffect;
     [SerializeField] private Renderer bombRenderer;
 
     private readonly Color _color1 = Color.red;
@@ -39,9 +39,12 @@ public class Bomba : MonoBehaviour
 
     private void Explode()
     {
-        if (explosionEffect != null)
+        if (explosionEffect.Length > 0)
         {
-            Instantiate(explosionEffect, transform.position, Quaternion.identity);
+            var randomIndex = Random.Range(0, explosionEffect.Length);
+            var selectedExplosion = explosionEffect[randomIndex];
+
+            Instantiate(selectedExplosion, transform.position, Quaternion.identity);
         }
 
         var colliders = Physics.OverlapSphere(transform.position, explosionRadius);
